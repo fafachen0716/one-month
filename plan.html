@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v6.15.1/ol.css"
+    type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v6.15.1/dist/ol.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.1.1"></script>
+  <script src="./dist/ol-ext.min.js"></script>
+
+  <link rel="stylesheet" href="map.css" />
+  <style>
+    .ol-popup{
+      position:absolute;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      border:1px solid #cccccc;
+      bottom:12px;
+      left: -50px;
+      width: 200px;
+
+    }
+  </style>
+
+
+</head>
+
+<body>
+  <h1>Cartographie  d’<strong>accessibilité</strong></h1>
+
+  <button>Analyse D'accessibilité</button>
+
+  <button style="--c:#E95A49">Layer Switcher</button>
+  <br>  <br>  <br>
+  <h1 id="counter">counter</h1>
+
+  <div id="map" style="width: 1800px; height: 800px;"></div>
+  <div id="popup" class="ol-popup">
+    <div id = "popup-content"></div>
+  </div>
+
+
+
+</body>
+
+<!-- map -->
+
+<script>
+
+
+
+  var imageStyle = new ol.style.Style({
+          image: new ol.style.Circle({
+                radius: 5,
+                snapToPixel: false,
+                fill: new ol.style.Fill({
+                color: [234, 218, 226, 0.16]
+            }),
+            stroke: new ol.style.Stroke({
+                color: [255 , 0 , 0 , 1],
+                width: 1
+            })
+      })
+  });
+  var coordonnee = [2.3345596, 48.8576743];
+  var zoom = 18;
+  var attribution = new ol.control.Attribution({
+  collapsible: false
+  });
+
+  var baseLayers=[                //Basemaps
+    new ol.layer.Tile({           //Google Styling wizard
+      visible:true,
+      source: new ol.source.XYZ({
+        crossOrigin: 'anonymous',
+        url: 'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i570286820!3m17!2sen!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjF8cy5lOmwudHxwLnY6b2ZmLHMudDoxOXxzLmU6bC50fHAudjpvZmYscy50OjIwfHMuZTpsLnR8cC52Om9mZixzLnQ6ODF8cy5lOmwudHxwLnY6b2ZmLHMudDo4MnxzLmU6Zy5mfHAudjpvbnxwLmM6I2ZmZTBlZmVmLHMudDo4MnxzLmU6bC50fHAudjpvZmYscy50OjJ8cy5lOmcuZnxwLnY6b258cC5oOiMxOTAwZmZ8cC5jOiNmZmMwZThlOCxzLnQ6MnxzLmU6bC50fHAudjpvZmYscy50OjJ8cy5lOmwuaXxwLnY6b2ZmLHMudDozfHMuZTpnfHAubDoxMDB8cC52OnNpbXBsaWZpZWQscy50OjN8cy5lOmx8cC52Om9mZixzLnQ6NHxzLmU6bC50fHAudjpvZmYscy50OjR8cy5lOmwuaXxwLnY6b2ZmLHMudDo2NXxzLmU6Z3xwLnY6b258cC5sOjcwMCxzLnQ6NnxwLmM6I2ZmN2RjZGNk!4e0',
+      }),
+      title: 'BASEMAP'
+    })
+
+  ];
+
+
+  var map = new ol.Map({
+    target: 'map',
+    layers:baseLayers,
+    controls: ol.control.defaults().extend([
+    new ol.control.LayerSwitcher()
+    ]),
+    view: new ol.View({
+        center: ol.proj.fromLonLat(coordonnee),
+      zoom: zoom
+    })
+  });
+
+
+  var overlay = new ol.Overlay({
+  element: document.getElementById('popup'),
+  autoPan: true,
+  autoPanAnimation: {
+    duration: 250
+    }
+  });
+  map.addOverlay(overlay);
+
+
+  var Communes = new ol.layer.Vector({
+      source: new ol.source.Vector({
+        url: 'communes.geojson',
+        format: new ol.format.GeoJSON(),
+      }),
+      title: 'Communes',
+      //Style
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({
+          color: [255, 0, 0, 0.5]
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'white',
+        }),
+        }),
+    });
+    map.addLayer(Communes);
+
+  // 創建一個新的標記樣式
+  const markerStyle = new ol.style.Style({
+    image: new ol.style.Icon({
+      anchor: [0.5, 1],
+      src: 'man.png',
+      scale: 0.9,
+      color: [176, 58, 46, 0.7]
+    })
+  });
+
+
+
+
+var markers = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url: 'interview.csv',
+    format: new ol.format.GeoJSON()
+  }),
+  title: 'Ménage',
+  style: markerStyle
+});
+
+var Filter = new ol.format.filter.lessThanOrEqualTo('POIDSM', 0);
+
+Papa.parse('interview.csv', {
+  download: true,
+  header: true,
+  dynamicTyping: true,
+  complete: function(results) {
+    var features = new ol.format.GeoJSON().readFeatures({
+      type: 'FeatureCollection',
+      features: results.data.map(function(row) {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: ol.proj.fromLonLat([row.RESLNG_OLD, row.RESLAT_OLD])
+          },
+          properties: {
+            JOUR: row.JOUR,
+            MOIS: row.MOIS,
+            ANNEE: row.ANNEE,
+            REVENU: row.REVENU,
+            POIDSM:row.POIDSM
+
+          }
+        };
+        
+      }),
+      filter: Filter
+    });
+    markers.getSource().addFeatures(features);
+  }
+});
+map.addLayer(markers);
+
+
+  // 創建一個Ferro標記樣式
+  const gareStyle = new ol.style.Style({
+    image: new ol.style.Icon({
+      anchor: [0.5, 1],
+      src: 'train.png',
+      scale: 0.05,
+      color: [77, 39, 17, 1],
+    })
+  });
+
+
+var gare_station_ferro = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url: 'gare_station_ferro.geojson',
+    format: new ol.format.GeoJSON()
+  }),
+  title: 'Gare + Ferro',
+  style: gareStyle
+});
+
+map.addLayer(gare_station_ferro);
+
+  // Education
+  const educationStyle = new ol.style.Style({
+    image: new ol.style.Icon({
+      anchor: [0.5, 1],
+      src: 'school.png',
+      scale: 1,
+      color: [23, 30, 155, 1],
+    })
+  });
+
+
+var education = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url: 'education.geojson',
+    format: new ol.format.GeoJSON()
+  }),
+  title: 'education',
+  style: educationStyle
+});
+
+map.addLayer(education);
+
+
+// 創建一個圓形圖層，表示700公尺的半徑
+var circleLayer = new ol.layer.Vector({
+  source: new ol.source.Vector(),
+  title: 'Radius 700m',
+  style: new ol.style.Style({
+    fill: new ol.style.Fill({
+      color: [255, 255, 255, 0.3]
+    }),
+    stroke: new ol.style.Stroke({
+      color: '#ffcc33',
+      width: 2
+    }),
+    image: new ol.style.Circle({
+      radius: 7,
+      fill: new ol.style.Fill({
+        color: '#ffcc33'
+      })
+    })
+  })
+});
+
+// 將圓形圖層添加到地圖上
+map.addLayer(circleLayer);
+
+
+
+
+
+
+
+
+
+
+var container = document.getElementById('popup')
+var content = document.getElementById('popup-content')
+var content_element = document.getElementById('popup-content')
+
+//計數器
+var countDisplay = document.createElement('div');
+countDisplay.className = 'count-display';
+document.body.appendChild(countDisplay);
+
+//onclick
+
+map.on("click",function(evt){
+  map.removeOverlay(overlaydet);
+  var feature1 =map.forEachFeatureAtPixel(evt.pixel,
+    function(feature1){
+    return feature1
+    })
+if(feature1 && feature1.get('JOUR') && feature1.get('REVENU')){
+  var geometry= feature1.getGeometry();
+  console.log(geometry);
+  var coord=geometry.getCoordinates();
+  var REVENU=feature1.get('REVENU')
+  if(REVENU==1){REVENU='Moins de 800€'}
+  else if (REVENU==2){REVENU='De 800€ à 1200€'}
+  else if (REVENU==3){REVENU='De 1200€ à 1600€'}
+  else if (REVENU==4){REVENU='De 1600€ à 2000€'}
+  else if (REVENU==5){REVENU='De 2000€ à 2400€'}
+  else if (REVENU==6){REVENU='De 2400€ à 3000€'}
+  else if (REVENU==7){REVENU='De 3000€ à 3500€'}
+  else if (REVENU==8){REVENU='De 3500€ à 4500€'}
+  else if (REVENU==9){REVENU='De 4500€ à 5500€'}
+  else if (REVENU==10){REVENU='5500€ et plus'}
+  else{REVENU='Pas de réponse'}
+  var content = 'Date: <br>'+ feature1.get('JOUR') +'/'+ feature1.get('MOIS')+'/'+feature1.get('ANNEE')+'<br>'; 
+  content += 'Revenue: <br>'+ REVENU
+  content += '<br> POIDSM: <br>'+ feature1.get('POIDSM')
+  content_element.innerHTML=content
+
+  var overlaydet = new ol.Overlay({
+  element:container,
+  offset:[0,-10]
+  })
+  overlaydet.setPosition(coord)
+
+  map.addOverlay(overlaydet)
+
+    circleLayer.getSource().clear();
+    var center = evt.coordinate;
+    var radius = 700;
+    var circle = new ol.geom.Circle(center, radius);
+    var feature = new ol.Feature(circle);
+    circleLayer.getSource().addFeature(feature);
+
+
+  // 計算圓形內的 ferro 點資料數量
+  var ferro = gare_station_ferro.getSource().getFeatures();
+  var countFerro = 0;
+  for (var i = 0; i < ferro.length; i++) {
+    if (feature.getGeometry().intersectsExtent(ferro[i].getGeometry().getExtent())) {
+      countFerro++;
+    }
+  }
+
+  // 在 HTML 元素中顯示計數器的值
+  console.log(countFerro)
+  var element = document.getElementById("counter");
+  element.innerHTML = countFerro + ' stations in the 700m radius.';
+  //console.log(countEdu)
+  // 計算圓形內的 school 點資料數量
+  var edu = education.getSource().getFeatures();
+  for (var i = 0; i < edu.length; i++) {
+    if (feature.getGeometry().intersectsExtent(edu[i].getGeometry().getExtent())) {
+      countFerro++;
+    }
+  }
+  console.log(edu)
+
+
+}else {
+    map.removeOverlay(overlaydet);
+    circleLayer.getSource().clear();
+    var center = evt.coordinate;
+    var radius = 700;
+    var circle = new ol.geom.Circle(center, radius);
+    var feature = new ol.Feature(circle);
+    circleLayer.getSource().addFeature(feature);
+  }
+
+  // 計算圓形內的 ferro 點資料數量
+  var ferro = gare_station_ferro.getSource().getFeatures();
+  var countFerro = 0;
+  for (var i = 0; i < ferro.length; i++) {
+    if (feature.getGeometry().intersectsExtent(ferro[i].getGeometry().getExtent())) {
+      countFerro++;
+    }
+  }
+
+
+  // 在 HTML 元素中顯示計數器的值
+  console.log(countFerro)
+  var element = document.getElementById("counter");
+  element.innerHTML = countFerro + ' stations in the 700m radius.';
+  //console.log(countEdu)
+  // 計算圓形內的 school 點資料數量
+  var edu = education.getSource().getFeatures();
+  for (var i = 0; i < edu.length; i++) {
+    if (feature.getGeometry().intersectsExtent(edu[i].getGeometry().getExtent())) {
+      countFerro++;
+    }
+  }
+  console.log(edu)  
+
+})
+
+//Adding Layer Switcher
+var layerSwitcher= new ol.control.layerSwitcher()
+map.addControl(layerSwitcher)
+
+
+
+
+
+
+</script>
+
+<!-- popup -->
+<script>
+
+</script>
+
+</html>

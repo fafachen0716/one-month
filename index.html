@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v6.15.1/css/ol.css"
+    type="text/css">
+  <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v6.15.1/build/ol.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.1.1"></script>
+  <script src="./dist/ol-ext.min.js"></script>
+  <link rel="stylesheet" href="./dist/ol-ext.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-...（省略部分）..." crossorigin="anonymous" />
+
+
+  <link rel="stylesheet" href="map.css" />
+  <style>
+    .ol-popup{
+      position:absolute;
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      border:1px solid #cccccc;
+      bottom:12px;
+      left: -50px;
+      width: 200px;
+
+
+      
+    }
+    .heart-image {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-image: url('heart.png');
+    background-size: cover;
+    transition: opacity 1s ease-in-out;
+    } 
+
+
+      /* Style for the congratulation icons */
+      .congratulation-icon {
+        width: 32px;
+        height: 32px;
+        background-color: #ff0000; /* Red background for congratulation */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #ffffff; /* White border for contrast */
+        opacity: 1; /* Initial opacity */
+        animation: heartAnimation 0.3s ease-in-out forwards; /* Auto-end after 0.3 seconds */
+        pointer-events: auto; /* Ensure the element can receive click events */
+      }
+
+      @keyframes heartAnimation {
+        0% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+      }
+
+    #timerContainer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .vibrate {
+        animation: vibrateAnimation 0.1s ease-in-out;
+        }
+
+        @keyframes vibrateAnimation {
+        0% { transform: translate(0, 0); }
+        25% { transform: translate(-5px, -5px); }
+        50% { transform: translate(5px, 5px); }
+        75% { transform: translate(-5px, 5px); }
+        100% { transform: translate(5px, -5px); }
+        }
+
+  </style>
+
+
+</head>
+
+<body>
+  <div id="timerContainer">
+
+  <h1><strong><i class="fas fa-gift"></i> 一個月快樂 <i class="fas fa-gift"></i></strong></h1>
+
+  <p>開始交往: <input type="date" id="startDate" value="2023-11-12"></p>
+  <p>今天日期: <input type="date" id="currentDate"></p>
+
+  <button onclick="calculateDays()">計算天數</button>
+
+  <p id="result"></p>
+  <div id="counter"><h3>已經被摸頭: 0 次</h3></div>
+  兩人距離 <strong>615.02</strong> 公里
+  </div>  
+  
+  <div id="map" style="width: 1500px; height: 800px;"></div>
+  <div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id = "popup-content"></div>
+  </div>
+
+
+
+</body>
+
+<!-- map -->
+
+<script>
+
+    document.getElementById("currentDate").valueAsDate = new Date(); // 自動設置今天日期
+
+    function calculateDays() {
+        var startDate = new Date(document.getElementById("startDate").value);
+        var currentDate = new Date(document.getElementById("currentDate").value);
+
+        // 計算相差的時間（以毫秒為單位）
+        var timeDifference = currentDate.getTime() - startDate.getTime();
+
+        // 將毫秒轉換為天
+        var daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+        document.getElementById("result").innerHTML = "交往了 " + daysDifference + " 天！";
+    }
+
+
+
+  var imageStyle = new ol.style.Style({
+          image: new ol.style.Circle({
+                radius: 5,
+                snapToPixel: false,
+                fill: new ol.style.Fill({
+                color: [234, 218, 226, 0.16]
+            }),
+            stroke: new ol.style.Stroke({
+                color: [255 , 0 , 0 , 1],
+                width: 1
+            })
+      })
+  });
+  var coordonnee = [2.3345596, 48.8576743];
+  var zoom = 5;
+  var attribution = new ol.control.Attribution({
+  collapsible: false
+  });
+
+  var baseLayers=[                //Basemaps
+    new ol.layer.Tile({           //Google Styling wizard
+      visible:true,
+      source: new ol.source.XYZ({
+        crossOrigin: 'anonymous',
+        url: 'https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m3!1e0!2sm!3i570286820!3m17!2sen!3sUS!5e18!12m4!1e68!2m2!1sset!2sRoadmap!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy50OjF8cy5lOmwudHxwLnY6b2ZmLHMudDoxOXxzLmU6bC50fHAudjpvZmYscy50OjIwfHMuZTpsLnR8cC52Om9mZixzLnQ6ODF8cy5lOmwudHxwLnY6b2ZmLHMudDo4MnxzLmU6Zy5mfHAudjpvbnxwLmM6I2ZmZTBlZmVmLHMudDo4MnxzLmU6bC50fHAudjpvZmYscy50OjJ8cy5lOmcuZnxwLnY6b258cC5oOiMxOTAwZmZ8cC5jOiNmZmMwZThlOCxzLnQ6MnxzLmU6bC50fHAudjpvZmYscy50OjJ8cy5lOmwuaXxwLnY6b2ZmLHMudDozfHMuZTpnfHAubDoxMDB8cC52OnNpbXBsaWZpZWQscy50OjN8cy5lOmx8cC52Om9mZixzLnQ6NHxzLmU6bC50fHAudjpvZmYscy50OjR8cy5lOmwuaXxwLnY6b2ZmLHMudDo2NXxzLmU6Z3xwLnY6b258cC5sOjcwMCxzLnQ6NnxwLmM6I2ZmN2RjZGNk!4e0',
+      }),
+      title: 'BASEMAP'
+    })
+
+  ];
+/*
+  48.8706186,2.5768524
+  25.0180903,121.457856
+  24.1417342,120.6206925
+  53.4901335, -2.2837930
+*/
+  var map = new ol.Map({
+    target: 'map',
+    layers:baseLayers,
+    controls: ol.control.defaults().extend([
+    new ol.control.LayerSwitcher()
+    ]),
+    view: new ol.View({
+        center: ol.proj.fromLonLat(coordonnee),
+      zoom: zoom
+    }),
+    interactions: ol.interaction.defaults({
+        doubleClickZoom: false // 禁止雙擊縮放
+    }),
+  });
+  
+  var previousPopup = null; // 用來存儲上一個 popup 的參考
+
+
+  var overlay = new ol.Overlay({
+  element: document.getElementById('popup'),
+  autoPan: true,
+  autoPanAnimation: {
+    duration: 250
+    }
+  });
+  map.addOverlay(overlay);
+
+
+var clickCounter = 0; // 計數器變數
+var heartAnimationDuration = 2000; // 愛心動畫持續時間（毫秒）
+
+
+        // Define an array of points with their information
+        var points = [
+            {
+                coordinates: ol.proj.fromLonLat([2.5768524, 48.8706186]),
+                title: 'Point 1',
+                content: 'Additional information for Point 1.',
+                address: "Paris, France",
+                image: "fafa2.png",
+            },
+            {
+                coordinates: ol.proj.fromLonLat([121.457856, 25.0180903]),
+                title: 'Point 2',
+                content: '大庭新村',
+                address: "Taipei, Taiwan",
+                image: "riki1.png",
+            },
+            {
+                coordinates: ol.proj.fromLonLat([120.6206925, 24.1417342]),
+                title: 'Point 3',
+                content: 'Additional information for Point 3.',
+                address: "Taichung, Taiwan",
+                image: "fafa1.png",
+            },
+            {
+                coordinates: ol.proj.fromLonLat([-2.2837930, 53.4901335]),
+                title: 'Point 4',
+                content: 'Additional information for Point 4.',
+                address: "Manchester, UK",
+                image: "riki2.png",
+            }
+        ];
+
+
+  // 添加坐標點和popup
+
+        // Add points to the map with popups
+        points.forEach(function(point) {
+            var marker = new ol.Overlay({
+                position: point.coordinates,
+                positioning: 'center-center',
+                element: document.createElement('img'),
+                stopEvent: false
+            });
+
+            // Set the image source
+            marker.getElement().src = point.image;
+
+            // Add the marker to the map
+            map.addOverlay(marker);
+
+            var popup = new ol.Overlay({
+                element: document.createElement('div'),
+                positioning: 'bottom-center',
+            });
+
+            var popupContent = document.createElement('div');
+            popupContent.innerHTML = '<b>' + point.title + '</b><br>' + point.content;
+            
+            // Set the style for the popup image
+            var popupImage = document.createElement('img');
+            popupImage.src = point.image;
+            popupImage.style.transform = 'scale(0.5)';
+            popupContent.appendChild(popupImage);
+
+            popup.getElement().appendChild(popupContent);
+
+            map.addOverlay(popup);
+
+            marker.getElement().addEventListener('click', function() {
+                // Clear the previous popup
+                if (previousPopup) {
+                    map.removeOverlay(previousPopup);
+                }
+                /*
+                popup.setPosition(point.coordinates);
+                previousPopup = popup;*/
+              // Increment click counter
+              clickCounter++;
+              // Update counter display
+              updateCounterDisplay();
+
+              // Add vibrate class to the marker element
+              marker.getElement().classList.add('vibrate');
+
+              // Remove the vibrate class after the animation duration (1000ms)
+              setTimeout(function() {
+                  marker.getElement().classList.remove('vibrate');
+              }, 200);
+
+            });
+        });
+
+//heart animation
+
+  function showHeartAnimation(coordinates) {
+      var heartImage = document.createElement('div');
+      heartImage.className = 'heart-image';
+      heartImage.style.left = (coordinates[0] - 16) + 'px';
+      heartImage.style.top = (coordinates[1] - 16) + 'px';
+      document.body.appendChild(heartImage);
+
+      // 使用 setTimeout 在一秒後將 opacity 設置為 0，實現消失效果
+      setTimeout(function() {
+          heartImage.style.opacity = 0;
+      }, 300);
+  }
+
+    function updateCounterDisplay() {
+        document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + clickCounter + '次</h3>';
+    }
+
+
+      // Add animated hearts to the map at random locations
+      function addAnimatedHearts(coordinate) {
+        var heartIcon = document.createElement("div");
+        heartIcon.className = "congratulation-icon";
+        heartIcon.innerHTML = "❤";
+
+        var overlay = new ol.Overlay({
+          position: coordinate,
+          element: heartIcon,
+          positioning: "center-center",
+        });
+
+        map.addOverlay(overlay);
+
+        // Animate the heart icon using OpenLayers
+        var startTime = Date.now();
+        var duration = 200; // Animation duration in milliseconds
+
+        function animateHeart() {
+          var elapsedTime = Date.now() - startTime;
+          var progress = elapsedTime / duration;
+
+          if (progress < 1) {
+            // Update the position and opacity of the overlay during the animation
+            var easedProgress = ol.easing.easeOut(progress);
+            overlay.setPosition([
+              coordinate[0],
+              coordinate[1] - easedProgress * 50, // Move the heart upwards
+            ]);
+            overlay.getElement().style.opacity = 1 - easedProgress; // Fade out
+
+            // Continue the animation
+            requestAnimationFrame(animateHeart);
+          } else {
+
+
+
+          // Get all elements with the "congratulation-icon" class
+          var elementsToRemove = document.querySelectorAll(".congratulation-icon");
+
+          // Loop through the elements and remove each one
+          elementsToRemove.forEach(function(element) {
+            element.remove();
+          });
+
+            // Remove the heart overlay when the animation is complete
+            map.removeOverlay(overlay);
+          }
+        }
+
+        animateHeart();
+      }
+
+      // Add a click event listener to the map
+      map.on("click", function (event) {
+        var coordinate = event.coordinate;
+        addAnimatedHearts(coordinate);
+      });
+
+
+</script>
+
+<!-- popup -->
+<script>
+
+</script>
+
+</html>

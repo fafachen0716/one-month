@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交往計時器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>交往計時器</h1>
+
+    <p>開始日期: <input type="date" id="startDate" value="2023-11-12"></p>
+    <p>今天日期: <input type="date" id="currentDate"></p>
+
+    <button onclick="calculateDays()">計算天數</button>
+
+    <p id="result"></p>
+
+    <script>
+        document.getElementById("currentDate").valueAsDate = new Date(); // 自動設置今天日期
+
+        function calculateDays() {
+            var startDate = new Date(document.getElementById("startDate").value);
+            var currentDate = new Date(document.getElementById("currentDate").value);
+
+            // 計算相差的時間（以毫秒為單位）
+            var timeDifference = currentDate.getTime() - startDate.getTime();
+
+            // 將毫秒轉換為天
+            var daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+            document.getElementById("result").innerHTML = "交往了 " + daysDifference + " 天！";
+        }
+    </script>
+
+</body>
+</html>
