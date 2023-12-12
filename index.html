@@ -112,8 +112,8 @@
   <button id="buyheart" onclick="buyheart()">❤</button>
   <p id="loveicon"></p>
   <div id="distance">兩人距離 <strong>615.02</strong> 公里</div>
-  <div id="lastsaving"><h3>上次儲存時間：</h3></div>
-
+  <!--  <div id="lastsaving"><h3>上次儲存時間：</h3></div>
+  -->
   </div>  
   
   <div id="map" style="width: 1500px; height: 800px;"></div>
@@ -578,7 +578,7 @@ var savegame = JSON.parse(localStorage.getItem("mystudyingplanSave"))
 if (savegame !== null) {
   gameData = savegame
   for (let index = 0; index < gameData.heart; index++) {
-  if (gameData.heart/5==0) {
+  if (index % 5 === 0) {
   document.getElementById("loveicon").innerHTML += '<br>'
   }
   document.getElementById("loveicon").innerHTML += '❤'
@@ -591,7 +591,7 @@ var saveGameLoop = window.setInterval(function() {
     localStorage.setItem("mystudyingplanSave", JSON.stringify(gameData))
     console.log("game saved")
     lastSaveTime = Math.round(Date.now() / 100) * 100; // Update lastSaveTime in 0.1-second increments
-  }, 10000)
+  }, 500)
 
 // Function to update the last save time text
 var updateSaveGameLoop = window.setInterval(function() {
@@ -604,7 +604,7 @@ var updateSaveGameLoop = window.setInterval(function() {
 function updateLastSaveText() {
   var currentTime = Math.round(Date.now() / 100) * 100; // Round to the nearest 0.1 second
   var timeSinceLastSave = (currentTime - lastSaveTime) / 1000; // Convert to seconds
-  document.getElementById("lastsaving").textContent = "上次存檔：" + timeSinceLastSave + " 秒前 ，每【10】秒進行一次存檔。";
+  //document.getElementById("lastsaving").textContent = "上次存檔：" + timeSinceLastSave + " 秒前 ，每【10】秒進行一次存檔。";
 }
 
 
