@@ -92,6 +92,29 @@
         100% { transform: translate(5px, -5px); }
         }
 
+        
+
+
+    /* Style for the first button */
+    .map-button1 {
+      background: url('riki1.png');
+    }
+
+    /* Style for the second button */
+    .map-button2 {
+      background: url('riki2.png');
+    }
+
+        /* Style for the first button */
+        .map-button3 {
+      background: url('fafa1.png');
+    }
+
+    /* Style for the second button */
+    .map-button4 {
+      background: url('fafa2.png');
+
+    }
   </style>
 
 
@@ -102,7 +125,7 @@
 
   <h1><strong><i class="fas fa-gift"></i> 一個月快樂 <i class="fas fa-gift"></i></strong></h1>
 
-  <p>開始交往: <input type="date" id="startDate" value="2023-11-12"></p>
+  <p>開始交往: <input type="date" id="startDate" readonly value="2023-11-12"></p>
   <p>今天日期: <input type="date" id="currentDate"></p>
 
   <button onclick="calculateDays()">計算天數</button>
@@ -117,7 +140,12 @@
     -->
   <!-- Reset button -->
   <button type="button" style="--c:#E95A49" class="btn btn-danger" id="resetButton" onclick="resetGameData()">重新開始 Reset</button>
-
+  <!-- Add buttons -->
+  <br>
+  <button class="map-button3" onclick="centerMapToCoordinate([120.6206925, 24.1417342])">F1</button>
+  <button class="map-button1" onclick="centerMapToCoordinate([121.457856, 25.0180903])">R1</button>
+  <button class="map-button4" onclick="centerMapToCoordinate([2.5768524, 48.8706186])">F2</button>
+  <button class="map-button2" onclick="centerMapToCoordinate([-2.2837930, 53.4901335])">R2</button>
 
   </div>  
   
@@ -678,6 +706,11 @@ function showSection(sectionID) {
   document.getElementById(sectionID).style.display = 'block'; // Show the selected section
 }
 
+    // Function to center the map to a specific coordinate
+    function centerMapToCoordinate(coordinate) {
+      map.getView().animate({ center: ol.proj.fromLonLat(coordinate),zoom: 16,
+ duration: 1000 });
+    }
 
 
 </script>
