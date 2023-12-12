@@ -111,9 +111,14 @@
   <div id="counter"><h3>已經被摸頭: 0 次</h3></div>
   <button id="buyheart" onclick="buyheart()">❤</button>
   <p id="loveicon"></p>
-  <div id="distance">兩人距離 <strong>615.02</strong> 公里</div>
-  <!--  <div id="lastsaving"><h3>上次儲存時間：</h3></div>
-  -->
+  <p id="auto">每秒自動摸頭：0 次</p>
+  <div id="distance"><i class='fas fa-map-marker-alt'></i>兩人距離 <strong>615.02</strong> 公里</div>
+  <!-- map <div id="lastsaving"><h3>上次儲存時間：</h3></div>
+    -->
+  <!-- Reset button -->
+  <button type="button" style="--c:#E95A49" class="btn btn-danger" id="resetButton" onclick="resetGameData()">重新開始 Reset</button>
+
+
   </div>  
   
   <div id="map" style="width: 1500px; height: 800px;"></div>
@@ -334,7 +339,7 @@ var heartAnimationDuration = 2000; // 愛心動畫持續時間（毫秒）
   }
 
     function updateCounterDisplay() {
-        document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter + '次</h3>';
+      document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
     }
 
 
@@ -414,15 +419,27 @@ var lastSaveTime = Math.round(Date.now() / 100) * 100;
 
 // Function to reset the game data
 function resetGameData() {
+  localStorage.clear();
+  localStorage.clear();
+
   gameData = {
+    heart:0,
     clickCounter:0,
     concept: 0,
     conceptPerClick: 1,
     conceptPerClickCost: 100,
-    PodcastCost: 25,
-    PodcastOn: 0
-  };
-  CheckUpgrades("Podcast");
+    PodcastCost:25,
+    PodcastOn:0,
+    name:"學測戰士"
+
+  }
+
+  localStorage.setItem("mystudyingplanSave", JSON.stringify(gameData))
+
+  console.log("game reset")
+  console.log(gameData)
+  document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
+  document.getElementById('auto').innerHTML = '每秒自動摸頭: ' + (gameData.heart/10).toFixed(2) + '次';
   // You can also reset any additional properties here if needed
 }
 
@@ -440,7 +457,7 @@ function buyheart() {
 if (gameData.clickCounter >= 10) {
     gameData.clickCounter -= 10
     document.getElementById("loveicon").innerHTML += '❤'
-    document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter + '次</h3>';
+    document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
     gameData.heart++
 }
 }
@@ -571,8 +588,8 @@ if (gameData["PodcastOn"] == 1) {
   console.log("你們還是學生")
   }
 
-  document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter + '次</h3>';
-}, 1000)
+  document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
+}, 100)
 
 var savegame = JSON.parse(localStorage.getItem("mystudyingplanSave"))
 if (savegame !== null) {
@@ -591,15 +608,28 @@ var saveGameLoop = window.setInterval(function() {
     localStorage.setItem("mystudyingplanSave", JSON.stringify(gameData))
     console.log("game saved")
     lastSaveTime = Math.round(Date.now() / 100) * 100; // Update lastSaveTime in 0.1-second increments
-  }, 500)
+  
+    gameData.clickCounter+=gameData.heart/10/10
+    document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
+    document.getElementById('auto').innerHTML = '每秒自動摸頭: ' + (gameData.heart/10).toFixed(2) + '次';
+    document.getElementById("loveicon").innerHTML = ''
+
+    for (let index = 0; index < gameData.heart; index++) {
+    if (index % 5 === 0) {
+    document.getElementById("loveicon").innerHTML += '<br>'
+    }
+    document.getElementById("loveicon").innerHTML += '❤'
+    }
+  
+  
+  }, 100)
 
 // Function to update the last save time text
 var updateSaveGameLoop = window.setInterval(function() {
   updateLastSaveText(); // Update the "lastsaving" text
   console.log("game save time updated")
   console.log(JSON.stringify(gameData))
-
-},500)
+},100)
 
 function updateLastSaveText() {
   var currentTime = Math.round(Date.now() / 100) * 100; // Round to the nearest 0.1 second
@@ -608,10 +638,6 @@ function updateLastSaveText() {
 }
 
 
-var savegame = JSON.parse(localStorage.getItem("mystudyingplanSave"))
-if (savegame !== null) {
-  gameData = savegame
-}
 
 
 
