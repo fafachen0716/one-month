@@ -219,6 +219,7 @@
 // Initial game data
 var gameData = {
     heart:0,
+    heartcost:10,
     clickCounter:0,
     concept: 0,
     conceptPerClick: 1,
@@ -424,6 +425,7 @@ function resetGameData() {
 
   gameData = {
     heart:0,
+    heartcost:10,
     clickCounter:0,
     concept: 0,
     conceptPerClick: 1,
@@ -454,11 +456,14 @@ $(document).ready(function() {
 
 
 function buyheart() {
-if (gameData.clickCounter >= 10) {
-    gameData.clickCounter -= 10
+if (gameData.clickCounter >= gameData.heartcost) {
+    gameData.clickCounter -= gameData.heartcost
+    gameData.heartcost = (gameData.heartcost*1.03).toFixed(2)
     document.getElementById("loveicon").innerHTML += '❤'
     document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
     gameData.heart++
+    document.getElementById("buyheart").innerHTML = '❤ '+ gameData.heartcost
+
 }
 }
 
@@ -589,6 +594,8 @@ if (gameData["PodcastOn"] == 1) {
   }
 
   document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
+  document.getElementById("buyheart").innerHTML = '❤ '+ gameData.heartcost
+
 }, 100)
 
 var savegame = JSON.parse(localStorage.getItem("mystudyingplanSave"))
@@ -600,7 +607,8 @@ if (savegame !== null) {
   }
   document.getElementById("loveicon").innerHTML += '❤'
   }
-  
+  document.getElementById("buyheart").innerHTML = '❤ '+ gameData.heartcost
+
 }
 
 // Function to save the game
@@ -612,6 +620,8 @@ var saveGameLoop = window.setInterval(function() {
     gameData.clickCounter+=gameData.heart/10/10
     document.getElementById('counter').innerHTML = '<h3>已經被摸頭: ' + gameData.clickCounter.toFixed(2) + '次</h3>';
     document.getElementById('auto').innerHTML = '每秒自動摸頭: ' + (gameData.heart/10).toFixed(2) + '次';
+    document.getElementById("buyheart").innerHTML = '❤ '+ gameData.heartcost
+
     document.getElementById("loveicon").innerHTML = ''
 
     for (let index = 0; index < gameData.heart; index++) {
