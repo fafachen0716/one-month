@@ -630,7 +630,7 @@ var savegame = JSON.parse(localStorage.getItem("mystudyingplanSave"))
 if (savegame !== null) {
   gameData = savegame
   for (let index = 0; index < gameData.heart; index++) {
-  if (index % 5 === 0) {
+  if (index % 15 === 0) {
   document.getElementById("loveicon").innerHTML += '<br>'
   }
   document.getElementById("loveicon").innerHTML += '❤'
@@ -653,7 +653,7 @@ var saveGameLoop = window.setInterval(function() {
     document.getElementById("loveicon").innerHTML = ''
 
     for (let index = 0; index < gameData.heart; index++) {
-    if (index % 5 === 0) {
+    if (index % 15 === 0) {
     document.getElementById("loveicon").innerHTML += '<br>'
     }
     document.getElementById("loveicon").innerHTML += '❤'
