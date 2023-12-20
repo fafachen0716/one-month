@@ -128,7 +128,7 @@
 
     main {
       width: auto;
-      height: 16vh;
+      height: 10vh;
       overflow-y: scroll;
       padding-right: 7px;
     }
@@ -184,9 +184,14 @@
       <p>今天日期: <input type="date" id="currentDate"></p>
       <button onclick="calculateDays()">計算天數</button>
       <p id="result"></p>
+      
     </details>
+    <div id="distance"><i class='fas fa-map-marker-alt'></i>兩人距離 <strong>615.02</strong> 公里</div>
 
-  <div id="distance"><i class='fas fa-map-marker-alt'></i>兩人距離 <strong>615.02</strong> 公里</div>
+    <button class="map-button3" onclick="centerMapToCoordinate([120.6206925, 24.1417342])">F1</button>
+    <button class="map-button1" onclick="centerMapToCoordinate([121.457856, 25.0180903])">R1</button>
+    <button class="map-button4" onclick="centerMapToCoordinate([2.5768524, 48.8706186])">F2</button>
+    <button class="map-button2" onclick="centerMapToCoordinate([-2.2837930, 53.4901335])">R2</button>
 
   </section>
 
@@ -235,8 +240,6 @@
       <label class="form-check-label" for="flexSwitchCheckDisabled">深色模式（開發中）</label>
       </div>  
   </div>
-
-    <div id="lastsaving"><h3>上次儲存時間：</h3></div>
   </section>
 
 
@@ -252,9 +255,13 @@
   <main>
     <aside><p id="loveicon"></p></aside>
   </main>
-  <aside><p id="loveicon"><i class="fas fa-gift"></i></p></aside>
-  <aside><p id="loveicon"><i class="fas fa-gift"></i></p></aside>
-  <aside><p id="loveicon"><i class="fas fa-gift"></i></p></aside>
+
+    <aside><p id="@#"></p><i class="fas fa-gift"></i></aside>
+
+    <aside><p id="@"></p><i class="fas fa-gift"></i></aside>
+
+    <aside><p id="#￥"></p><i class="fas fa-gift"></i></aside>
+
   </div>
   <p id="auto">每秒自動摸頭：0 次</p>
   <!-- map ❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥❥
@@ -263,10 +270,7 @@
   <button type="button" style="--c:#E95A49" class="btn btn-danger" id="resetButton" onclick="resetGameData()">重新開始 Reset</button>
   <!-- Add buttons -->
   <br>
-  <button class="map-button3" onclick="centerMapToCoordinate([120.6206925, 24.1417342])">F1</button>
-  <button class="map-button1" onclick="centerMapToCoordinate([121.457856, 25.0180903])">R1</button>
-  <button class="map-button4" onclick="centerMapToCoordinate([2.5768524, 48.8706186])">F2</button>
-  <button class="map-button2" onclick="centerMapToCoordinate([-2.2837930, 53.4901335])">R2</button>
+
 
   
   </div>  
